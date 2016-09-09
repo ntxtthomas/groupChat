@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Group Chat Add User</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type ="text/javascript" src="/socket.io/socket.io.js"></script>
+</head>
+<script>
+	$(document).ready(function(){
+		var socket = io.connect(); 
+		while(!name){
+			var name = prompt("Please enter your name");
+		}
+		socket.emit('newUser', {userName: name })
+
+		socket.on('updateUserList', function(serverData){
+			$('div.users_box').html('');
+			$(serverData).each(function(index){
+				$('div.users_box').append("<h4>" + serverData[index].name+'</h4>');
+			})
+
+		})
+
+		$(document).on('submit', 'form', function(){
+			socket.emit('newMessage', {msg: '<p>' + name+ ': ' + $('#newMessage').val() + '</p>' } );
+			$('#newMessage').val('');
+			return false; 
+		});
+		socket.on('updateMessageBoard', function(serverData){
+			$('#message_box').append(serverData.msg);
+			$('#message_box').scrollTop($('#message_box')[0].scrollHeight);
+		})
+	})
+</script>
+<style>
+	.container {
+		padding: 20px;
+	}
+	#message_box {
+		width: 250px;
+		height: 300px;
+		background-color: lightgray;
+		margin-bottom: 10px;
+		margin-right: 20px;
+		overflow-y: scroll; 
+		display: inline-block;
+		border: 1px solid black; 
+	}
+	.users_box {
+		width: 250px;
+		height: 300px;
+		background-color: lightgray;
+		margin-bottom: 10px;
+		display: inline-block;
+		vertical-align: top;
+		border: 1px solid black; 
+	}
+</style>
+<body>
+	<div class="container">
+	<h3>Conversation Board</h3>
+		<div id="message_box"></div>
+		<div class="users_box"></div>
+			<form>
+				<label for="newMessage"></label>
+					<input type="text" name="newMessage" id="newMessage" style="width: 250px;" />
+				<input type="submit" name="submit" />
+			</form>
+	</div>
+</body>
+</html>
